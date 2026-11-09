@@ -436,7 +436,7 @@ speaker:
     channel: mono
 
   - platform: mixer
-    id: mixer_speaker
+    id: audio_mixer
     output_speaker: media_out
     source_speakers:
       - id: announcement_mixer_input
