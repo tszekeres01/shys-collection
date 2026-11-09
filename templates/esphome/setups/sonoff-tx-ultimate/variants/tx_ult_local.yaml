@@ -435,6 +435,37 @@ speaker:
     i2s_comm_fmt: i2s_lsb
     channel: mono
 
+  - platform: mixer
+    id: mixer_speaker
+    output_speaker: media_out
+    source_speakers:
+      - id: announcement_mixer_input
+      - id: media_mixer_input
+
+  - platform: resampler
+    id: announcement_spk_resampling_input
+    output_speaker: announcement_mixer_input
+
+  - platform: resampler
+    id: media_spk_resampling_input
+    output_speaker: media_mixer_input
+
+media_player:
+  - platform: speaker
+    id: mp_media_player
+    name: "Media Player"
+    buffer_size: 250000
+    announcement_pipeline:
+      speaker: announcement_spk_resampling_input
+      format: WAV
+      num_channels: 1
+      sample_rate: 48000
+    media_pipeline:
+      speaker: media_spk_resampling_input
+      format: FLAC
+      num_channels: 1
+      sample_rate: 48000
+
 uart:
   tx_pin: ${uart_tx_pin}
   rx_pin: ${uart_rx_pin}
