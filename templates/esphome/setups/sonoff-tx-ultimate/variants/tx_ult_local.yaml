@@ -436,29 +436,13 @@ light:
           speed: 10
           width: 20
 
-i2s_audio:
-  id: audio_i2s
-  i2s_lrclk_pin: ${audio_lrclk_pin}
-  i2s_bclk_pin: ${audio_bclk_pin}
 
-speaker:
-  - platform: i2s_audio
-    id: media_out
-    dac_type: external
-    i2s_dout_pin: ${audio_sdata_pin}
-    i2s_audio_id: audio_i2s
-    i2s_comm_fmt: stand_msb
-    channel: mono
-    sample_rate: 16000
-    buffer_duration: 100ms
-    timeout: never
 
-  - platform: mixer
-    id: audio_mixer
-    output_speaker: media_out
-    source_speakers:
-      - id: announcement_mixer_input
-      - id: media_mixer_input
+
+
+
+
+
 
 media_player:
   - platform: speaker
@@ -485,18 +469,114 @@ media_player:
               id(persistent_media_player_volume) = id(mp_media_player).volume;
             }
 
+i2s_audio:
+  - id: if_i2s_audio
+    i2s_bclk_pin: 2
+    i2s_lrclk_pin: 4
 rtttl:
-  speaker: announcement_mixer_input
-  id: speaker_test_tone
+  - id: rtttl_speaker
+    speaker: speaker_embedded
+    gain: 0.6
+speaker:
+  - platform: i2s_audio
+    id: speaker_embedded
+    i2s_dout_pin: 15
+    i2s_audio_id: if_i2s_audio
+    i2s_comm_fmt: stand_msb
+    channel: mono
+    timeout: never
+    sample_rate: 16000
+    bits_per_sample: 16
+    i2s_mode: primary
+    use_apll: false
+    mclk_multiple: 256
+    buffer_duration: 500ms
+    spdif_mode: false
+    dac_type: external
+    num_channels: 1
+    min_bits_per_sample: 16
+    max_bits_per_sample: 32
+    min_channels: 1
+    max_channels: 2
+    min_sample_rate: 16000
+    max_sample_rate: 48000
+  - platform: mixer
+    id: mixer_speaker_embedded
+    output_speaker: &id001 speaker_embedded
+    source_speakers:
+      - id: announcement_speaker_embedded
+        buffer_duration: 100ms
+        timeout: 500ms
+        output_speaker: *id001
+        bits_per_sample: 16
+        num_channels: 1
+        sample_rate: 16000
+      - id: media_speaker_embedded
+        buffer_duration: 100ms
+        timeout: 500ms
+        output_speaker: *id001
+        bits_per_sample: 16
+        num_channels: 1
+        sample_rate: 16000
+    queue_mode: false
+    bits_per_sample: 16
+    num_channels: 1
+  - platform: resampler
+    id: announcement_spk_resampling_input
+    output_speaker: announcement_speaker_embedded
+    bits_per_sample: passthrough
+    buffer_duration: 100ms
+    filters: 16
+    taps: 16
+    min_bits_per_sample: 16
+    max_bits_per_sample: 32
+    num_channels: 1
+    sample_rate: 16000
+  - platform: resampler
+    id: media_spk_resampling_input
+    output_speaker: media_speaker_embedded
+    bits_per_sample: passthrough
+    buffer_duration: 100ms
+    filters: 16
+    taps: 16
+    min_bits_per_sample: 16
+    max_bits_per_sample: 32
+    num_channels: 1
+    sample_rate: 16000
+media_player:
+  - platform: speaker
+    id: mp_media_player
+    name: Media Player
+    internal: false
+    buffer_size: 250000
+    task_stack_in_psram: false
+    announcement_pipeline:
+      speaker: announcement_spk_resampling_input
+      format: WAV
+      num_channels: 1
+      sample_rate: 48000
+    media_pipeline:
+      speaker: media_spk_resampling_input
+      format: FLAC
+      num_channels: 1
+      sample_rate: 48000
+    on_state:
+      - then:
+          - lambda: !lambda |-
+              // Check if volume has changed and update number entity
+              id(persistent_media_player_volume) = static_cast<uint8_t>(mp_media_player->volume * 100.0f);
+              if (id(persistent_media_player_volume) != id(last_media_player_volume)) {
+                id(last_media_player_volume) = id(persistent_media_player_volume);
+                ESP_LOGD("tx_ultimate_easy.media-player", "Media player volume changed to %" PRIu8 "%%, updating number entity",
+                                                    id(persistent_media_player_volume));
+              }
+    disabled_by_default: false
+    volume_increment: 0.05
+    volume_initial: 0.5
+    volume_max: 1.0
+    volume_min: 0.0
 
-button:
-  - platform: template
-    name: "Speaker Test"
-    entity_category: diagnostic
-    on_press:
-      - switch.turn_on: pa_power
-      - lambda: id(media_out).set_volume(1.0f);
-      - rtttl.play: "test:d=8,o=5,b=120:c,e,g,c6"
+
 
 uart:
   tx_pin: ${uart_tx_pin}
