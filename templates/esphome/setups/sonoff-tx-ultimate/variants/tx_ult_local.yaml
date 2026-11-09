@@ -432,7 +432,7 @@ speaker:
     dac_type: external
     i2s_dout_pin: ${audio_sdata_pin}
     i2s_audio_id: audio_i2s
-    i2s_comm_fmt: i2s_lsb
+    i2s_comm_fmt: stand_msb
     channel: mono
 
   - platform: mixer
