@@ -466,7 +466,8 @@ media_player:
   - platform: speaker
     id: mp_media_player
     name: "Media Player"
-    buffer_size: 250000
+    # Keep RAM available for the HTTP reader, decoder and speaker buffers.
+    buffer_size: 32000
     task_stack_in_psram: false
     announcement_pipeline:
       speaker: announcement_spk_resampling_input
