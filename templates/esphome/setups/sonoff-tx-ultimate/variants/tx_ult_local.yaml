@@ -12,14 +12,14 @@ substitutions:
   button_on_time: 500ms
 
   button_brightness: "0.7"
-  button_color: "{0,0,100}"
+  button_color: "{86,8,23}"
 
   nightlight: "on"
   nightlight_brightness: "0.2"
   nightlight_color: "{80,70,0}"
 
-  latitude: "50.123456°"
-  longitude: "5.654321°"
+  latitude: "47.53011°"
+  longitude: "19.40205°"
 
   touch_brightness: "1"
   touch_color: "{0,100,100}"
@@ -132,7 +132,7 @@ external_components:
 #  - source: /config/esphome/my_components
   - source:
       type: git
-      url: https://github.com/SmartHome-yourself/sonoff-tx-ultimate-for-esphome
+      url: https://github.com/tszekeres01/sonoff-tx-ultimate-for-esphome
       ref: main
     components: [tx_ultimate_touch]
 
