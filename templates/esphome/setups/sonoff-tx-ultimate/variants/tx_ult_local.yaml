@@ -574,6 +574,8 @@ script:
   - id: refresh_led_default
     mode: restart
     then:
+      - light.turn_off: leds_top
+
       - if:
           condition:
             lambda: "return ${relay_count}==1;"
