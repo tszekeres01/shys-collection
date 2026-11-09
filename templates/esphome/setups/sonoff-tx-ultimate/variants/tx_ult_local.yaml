@@ -135,6 +135,7 @@ external_components:
       url: https://github.com/tszekeres01/sonoff-tx-ultimate-for-esphome
       ref: main
     components: [tx_ultimate_touch]
+    refresh: 0s
 
 
 
