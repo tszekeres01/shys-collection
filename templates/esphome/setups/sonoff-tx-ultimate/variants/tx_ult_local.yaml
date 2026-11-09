@@ -68,6 +68,7 @@ esphome:
   on_boot:
     priority: -100
     then:
+      - script.execute: sync_initial_volume
       - binary_sensor.template.publish:
           id: touchfield_1
           state: OFF
@@ -135,6 +136,16 @@ external_components:
 
 
 globals:
+  - id: persistent_media_player_volume
+    type: float
+    restore_value: true
+    initial_value: '1.0'
+
+  - id: media_volume_initialized
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
   - id: nightlight_color
     type: int [3]
     restore_value: no
@@ -434,6 +445,7 @@ speaker:
     i2s_audio_id: audio_i2s
     i2s_comm_fmt: stand_msb
     channel: mono
+    timeout: never
 
   - platform: mixer
     id: audio_mixer
@@ -455,6 +467,7 @@ media_player:
     id: mp_media_player
     name: "Media Player"
     buffer_size: 250000
+    task_stack_in_psram: false
     announcement_pipeline:
       speaker: announcement_spk_resampling_input
       format: WAV
@@ -465,6 +478,25 @@ media_player:
       format: FLAC
       num_channels: 1
       sample_rate: 48000
+    on_state:
+      then:
+        - lambda: |-
+            if (id(media_volume_initialized)) {
+              id(persistent_media_player_volume) = id(mp_media_player).volume;
+            }
+
+rtttl:
+  speaker: announcement_mixer_input
+  id: speaker_test_tone
+
+button:
+  - platform: template
+    name: "Speaker Test"
+    entity_category: diagnostic
+    on_press:
+      - switch.turn_on: pa_power
+      - lambda: id(media_out).set_volume(1.0f);
+      - rtttl.play: "test:d=8,o=5,b=120:c,e,g,c6"
 
 uart:
   tx_pin: ${uart_tx_pin}
@@ -551,6 +583,19 @@ tx_ultimate_touch:
         ESP_LOGD("tx_ultimate_touch.on_long_touch_release", "Long Touch Release Position: %d / State: %d", touch.x, touch.state);
 
 script:
+  - id: sync_initial_volume
+    then:
+      - delay: 2s
+      - switch.turn_on: pa_power
+      - media_player.volume_set:
+          id: mp_media_player
+          volume: !lambda return id(persistent_media_player_volume);
+      - lambda: |-
+          id(media_volume_initialized) = true;
+          ESP_LOGI("audio", "Restored media volume: %.0f%%, amplifier: %s",
+                   id(persistent_media_player_volume) * 100.0f,
+                   id(pa_power).state ? "ON" : "OFF");
+
   - id: refresh_led_default
     mode: restart
     then:
