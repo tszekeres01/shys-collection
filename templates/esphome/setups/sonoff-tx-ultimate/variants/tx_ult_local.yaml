@@ -445,6 +445,8 @@ speaker:
     i2s_audio_id: audio_i2s
     i2s_comm_fmt: stand_msb
     channel: mono
+    sample_rate: 16000
+    buffer_duration: 100ms
     timeout: never
 
   - platform: mixer
@@ -454,14 +456,6 @@ speaker:
       - id: announcement_mixer_input
       - id: media_mixer_input
 
-  - platform: resampler
-    id: announcement_spk_resampling_input
-    output_speaker: announcement_mixer_input
-
-  - platform: resampler
-    id: media_spk_resampling_input
-    output_speaker: media_mixer_input
-
 media_player:
   - platform: speaker
     id: mp_media_player
@@ -470,15 +464,16 @@ media_player:
     buffer_size: 32000
     task_stack_in_psram: false
     announcement_pipeline:
-      speaker: announcement_spk_resampling_input
+      # HA transcodes to the output rate; avoid resampling on the ESP32.
+      speaker: announcement_mixer_input
       format: WAV
       num_channels: 1
-      sample_rate: 48000
+      sample_rate: 16000
     media_pipeline:
-      speaker: media_spk_resampling_input
+      speaker: media_mixer_input
       format: FLAC
       num_channels: 1
-      sample_rate: 48000
+      sample_rate: 16000
     on_state:
       then:
         - lambda: |-
