@@ -358,8 +358,12 @@ light:
     internal: true
     segments:
       - id: leds
-        from: 11
-        to: 21
+        from: 0
+        to: 7
+      - id: leds
+        from: 25
+        to: 27
+
   - platform: partition
     name: "LEDs Button middle"
     id: leds_button_middle
@@ -377,11 +381,8 @@ light:
     internal: true
     segments:
       - id: leds
-        from: 0
-        to: 7
-      - id: leds
-        from: 25
-        to: 27
+        from: 11
+        to: 21
 
   - platform: partition
     name: "LEDs Button single"
