@@ -461,38 +461,23 @@ speaker:
     channel: mono
     timeout: never
     sample_rate: 16000
-    bits_per_sample: 16
+    bits_per_sample: 16bit
     i2s_mode: primary
     use_apll: false
     mclk_multiple: 256
     buffer_duration: 500ms
     spdif_mode: false
     dac_type: external
-    num_channels: 1
-    min_bits_per_sample: 16
-    max_bits_per_sample: 32
-    min_channels: 1
-    max_channels: 2
-    min_sample_rate: 16000
-    max_sample_rate: 48000
   - platform: mixer
     id: mixer_speaker_embedded
-    output_speaker: &id001 speaker_embedded
+    output_speaker: speaker_embedded
     source_speakers:
       - id: announcement_speaker_embedded
         buffer_duration: 100ms
         timeout: 500ms
-        output_speaker: *id001
-        bits_per_sample: 16
-        num_channels: 1
-        sample_rate: 16000
       - id: media_speaker_embedded
         buffer_duration: 100ms
         timeout: 500ms
-        output_speaker: *id001
-        bits_per_sample: 16
-        num_channels: 1
-        sample_rate: 16000
     queue_mode: false
     bits_per_sample: 16
     num_channels: 1
@@ -503,9 +488,6 @@ speaker:
     buffer_duration: 100ms
     filters: 16
     taps: 16
-    min_bits_per_sample: 16
-    max_bits_per_sample: 32
-    num_channels: 1
     sample_rate: 16000
   - platform: resampler
     id: media_spk_resampling_input
@@ -514,9 +496,6 @@ speaker:
     buffer_duration: 100ms
     filters: 16
     taps: 16
-    min_bits_per_sample: 16
-    max_bits_per_sample: 32
-    num_channels: 1
     sample_rate: 16000
 media_player:
   - platform: speaker
